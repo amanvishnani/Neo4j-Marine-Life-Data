@@ -10,7 +10,6 @@ except Exception as e:
     print(e)
     print("DB Connection Failed")
 
-
 base_url = 'https://oceana.ca';
 
 
@@ -42,8 +41,13 @@ def get_all_animals() -> List[Dict]:
     return animals
 
 
+# ################## MAIN #######################
+
+# Get all Animals
 marine_animals = get_all_animals()
-for animal in marine_animals:
+
+# Process all Animals
+for m_animal in marine_animals:
     # 1. Check if animal Node exists
     # 2. Create animal Node if Does not exists.
     # 3. Check if habitat Node exists
