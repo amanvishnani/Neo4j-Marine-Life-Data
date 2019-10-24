@@ -43,4 +43,15 @@ def get_all_animals() -> List[Dict]:
 
 
 marine_animals = get_all_animals()
-print(marine_animals)
+for animal in marine_animals:
+    # 1. Check if animal Node exists
+    # 2. Create animal Node if Does not exists.
+    # 3. Check if habitat Node exists
+    # 4. Create habitat Node if does not exists.
+    # 5. Create Relationship between Animal Node and Habitat Node if not exist
+    # 6. Check if feeding habits Node exists and Create feeding habits Node if does not exists
+    # 7. Create Relationship between Animal Node and feeding habits Node if not exist
+    # 8. Check if conservation_status is not None and check if Node exists
+    #       and Create conservation_status Node if does not exists
+    # 9. Create Relationship between Animal Node and conservation_status Node if not exist
+    pass
