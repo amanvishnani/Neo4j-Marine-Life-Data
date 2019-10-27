@@ -3,7 +3,7 @@ from utils import *
 import networkx as nx
 
 
-
+# not to use this
 try:
     driver = GraphDatabase.driver("bolt://localhost:11002", auth=basic_auth("neo4j", "root"))
     session = driver.session()
