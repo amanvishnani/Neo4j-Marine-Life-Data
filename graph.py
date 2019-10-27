@@ -1,12 +1,10 @@
-from neo4j import GraphDatabase, basic_auth
 from utils import *
 import networkx as nx
+from db import session
 
 
 # not to use this
 try:
-    driver = GraphDatabase.driver("bolt://localhost:11002", auth=basic_auth("neo4j", "root"))
-    session = driver.session()
     result = session.run("MATCH (a:Animal) WHERE a.conservtnStatus =~ '.*Endangered.*' return a")
 
     graph = result.get_graph()
