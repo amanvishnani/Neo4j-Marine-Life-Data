@@ -60,12 +60,18 @@ cqlCreate = ""
 relationshipCql = ""
 for m_animal in marine_animals:
   # cqlCreate += createNode(m_animal)
-  session.run(createNode(m_animal))
-  session.run("MERGE (`"+ m_animal['feeding_habits']+"`:feeding_habits{name:'"+m_animal['feeding_habits']+"'})") 
   # relationshipCql += "CREATE (`"+ m_animal['name']+"`)-[:Identical_Feeding_habits]->(`"+m_animal['feeding_habits']+"`)"
-  # cqlCreate += ",(`"+ m_animal['name']+"`)-[:Identical_Feeding_habits]->(`"+m_animal['feeding_habits']+"`)"
+
+  # Create Animal node
+  session.run(createNode(m_animal))
+  
+  # Create feeding habit node 
+  session.run("MERGE (`"+ m_animal['feeding_habits']+"`:feeding_habits{name:'"+m_animal['feeding_habits']+"'})") 
+
+  # Create relationship with animal node and feeding habit node
   session.run("MATCH (a:Animal),(b:feeding_habits) WHERE a.name = '"+ m_animal['name']+"' and b.name = '"+m_animal['feeding_habits']+"' CREATE (a)-[:Identical_Feeding_habits]->(b)")
 
-#str = session.run(cqlCreate)
-
+#Relationship with animal nodes with same habitats and delete self relationships
+session.run("MATCH (a:Animal), (b:Animal) WHERE a.habitat = b.habitat create (a)-[relationship:neighbor]->(b)")
+session.run("MATCH (a:Animal)-[relationship:neighbor]->(a) delete relationship")
 print("done")
