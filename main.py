@@ -7,6 +7,7 @@ base_url = 'https://oceana.ca'
 
 
 def get_animal_details(url: str) -> Dict:
+    print("GET: {}{}".format(base_url, url))
     animal_soup = get_soup(url)
     animal = dict()
     name = animal_soup.find("div", class_="subpage-header-inner").find("h1").get_text().strip()
@@ -81,8 +82,13 @@ for m_animal in marine_animals:
     # Create relationship with animal node and feeding habit node
     createRelationship(m_animal, session)
 
+
 # Relationship with animal nodes with same habitats and delete self relationships
 session.run("MATCH (a:Animal),(b:Animal) WHERE a.habitat = b.habitat and  NOT (a.name = b.name) "
             "create (a)-[r:neighbor]->(b)")
+
+# Remove one edge from two way neighbor relationship
+session.run("match (a)-[r1:neighbor]->(b)-[r2:neighbor]->(a)  where ID(r1)>ID(r2) delete r1 return a")
+
 session.close()
 print("done")
