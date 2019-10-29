@@ -1,16 +1,9 @@
 from typing import Dict, List
-
-from neo4j import GraphDatabase, basic_auth
 from util import *
 
-try:
-    driver = GraphDatabase.driver("bolt://localhost", auth=basic_auth("neo4j", "root"))
-    session = driver.session()
-except Exception as e:
-    print(e)
-    print("DB Connection Failed")
+from db import session
 
-base_url = 'https://oceana.ca';
+base_url = 'https://oceana.ca'
 
 
 def get_animal_details(url: str) -> Dict:
@@ -22,6 +15,8 @@ def get_animal_details(url: str) -> Dict:
     conservation_status = animal_soup.find("h2", string="Conservation Status")
     if conservation_status is not None:
         conservation_status = conservation_status.find_next('p').get_text().strip()
+    if conservation_status is None:
+        conservation_status = "NA"
     animal["name"] = name
     animal["habitat"] = habitat
     animal["feeding_habits"] = feeding_habits
@@ -41,21 +36,53 @@ def get_all_animals() -> List[Dict]:
     return animals
 
 
+def createAnimal(animal, n4j_session):
+    create_qry = "CREATE (a: Animal{name: $name, habitat: $habitat, conservtnStatus:$conservation_status}) return a"
+    return n4j_session.run(create_qry, name=animal['name'], habitat=animal['habitat'],
+                           conservation_status=animal['conservation_status'])
+
+
+def findAnimalByName(animal_name, n4j_session):
+    return n4j_session.run("match (a) where a.name=$name return a", name=animal_name)
+
+
+def createFeedingHabit(feeding_habits, n4j_session):
+    cql = "MERGE (fh:feeding_habits{name: $feeding_habits})"
+    return n4j_session.run(cql, feeding_habits=feeding_habits)
+    pass
+
+
+def createRelationship(animal, n4j_session):
+    cql = """MATCH (a:Animal),(b:feeding_habits) WHERE a.name = $animal_name and b.name = $r_name 
+            CREATE (a)-[:Identical_Feeding_habits]->(b)"""
+    return n4j_session.run(cql, animal_name=animal['name'], r_name=animal['feeding_habits'])
+
+
 # ################## MAIN #######################
 
 # Get all Animals
 marine_animals = get_all_animals()
-
 # Process all Animals
 for m_animal in marine_animals:
-    # 1. Check if animal Node exists
-    # 2. Create animal Node if Does not exists.
-    # 3. Check if habitat Node exists
-    # 4. Create habitat Node if does not exists.
-    # 5. Create Relationship between Animal Node and Habitat Node if not exist
-    # 6. Check if feeding habits Node exists and Create feeding habits Node if does not exists
-    # 7. Create Relationship between Animal Node and feeding habits Node if not exist
-    # 8. Check if conservation_status is not None and check if Node exists
-    #       and Create conservation_status Node if does not exists
-    # 9. Create Relationship between Animal Node and conservation_status Node if not exist
-    pass
+
+    if session is None:
+        continue
+
+    x = findAnimalByName(m_animal["name"], session)
+    if x.single() is not None:
+        continue
+
+    # Create Animal node
+    createAnimal(m_animal, session)
+
+    # Create feeding habit node
+    createFeedingHabit(m_animal["feeding_habits"], session)
+
+    # Create relationship with animal node and feeding habit node
+    createRelationship(m_animal, session)
+
+# Relationship with animal nodes with same habitats and delete self relationships
+session.run("MATCH (a:Animal),(b:Animal) WHERE a.habitat = b.habitat and  NOT (a.name = b.name) "
+            "create (a)-[r:neighbor]->(b)")
+session.close()
+print("done")
