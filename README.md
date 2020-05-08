@@ -17,6 +17,6 @@
 - Python, Neo4j database, Neo4j Browser
 
 
-# Authors
+# Developers
 - Aman Vishnani
 - [Sumita Parte](https://github.com/sumitaparte) ([mirror](https://github.com/sumitaparte/Neo4jMarineLifeData))
